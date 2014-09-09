@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/Documents/flappy bird/game.py.html</title>
+<meta name="Generator" content="Vim/7.4">
+<meta name="plugin-version" content="vim7.4_v1">
+<meta name="syntax" content="python">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="none">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #000000; background-color: #ffffff; }
+body { font-family: monospace; color: #000000; background-color: #ffffff; }
+* { font-size: 1em; }
+.Comment { color: #8080ff; }
+.Constant { color: #ff6060; }
+.Identifier { color: #00ffff; }
+.Statement { color: #ffff00; }
+.PreProc { color: #ff40ff; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">#   Modules</span>
+
+<span class="PreProc">import</span> pygame,sys
+<span class="PreProc">from</span> pygame.<span class="Identifier">locals</span> <span class="PreProc">import</span> *
+pygame.init()
+<span class="PreProc">import</span> random
+
+
+<span class="Comment">#global variables</span>
+width,height=<span class="Constant">1000</span>,<span class="Constant">600</span>
+clock=pygame.time.Clock()
+point=pygame.mixer.Sound(<span class="Constant">'sfx_point.ogg'</span>)
+wing=pygame.mixer.Sound(<span class="Constant">'sfx_wing.ogg'</span>)
+whoosh=pygame.mixer.Sound(<span class="Constant">'sfx_swhooshing.ogg'</span>)
+hit=pygame.mixer.Sound(<span class="Constant">'sfx_hit.ogg'</span>)
+die=pygame.mixer.Sound(<span class="Constant">'sfx_die.ogg'</span>)
+
+<span class="Comment">#Sprite class</span>
+<span class="Statement">class</span> <span class="Identifier">_pipe</span>(pygame.sprite.Sprite):
+
+
+    <span class="Statement">def</span> <span class="Identifier">__init__</span>(self,x,y,transform,bird):
+        <span class="Identifier">super</span>(_pipe, self).__init__()
+        self.x = x
+        self.y = y
+        <span class="Statement">if</span> bird==<span class="Identifier">False</span>:
+                self.<span class="Identifier">object</span>=pygame.image.load(<span class="Constant">'pipe.jpeg'</span>)
+                self.<span class="Identifier">object</span>=pygame.transform.scale(self.<span class="Identifier">object</span>,(<span class="Constant">50</span>,y))
+                self.gap=random.randint(<span class="Constant">130</span>,<span class="Constant">150</span>)
+                self.transform=transform
+                self.bird=bird
+        <span class="Statement">else</span>:
+                self.bird=bird
+                self.<span class="Identifier">object</span>=pygame.image.load(<span class="Constant">'flappy2.png'</span>)
+                self.<span class="Identifier">object</span>=pygame.transform.scale(self.<span class="Identifier">object</span>,(<span class="Constant">100</span>,<span class="Constant">100</span>))
+                self.transform=transform
+                self.gap=random.randint(<span class="Constant">100</span>,<span class="Constant">150</span>)
+        self.rect = self.<span class="Identifier">object</span>.get_rect(center=(self.x,self.y))
+
+
+    <span class="Statement">def</span> <span class="Identifier">blit_pipe</span>(self,screen):
+        <span class="Statement">if</span> self.bird==<span class="Identifier">True</span>:
+            screen.blit(self.<span class="Identifier">object</span>,(self.x,self.y))
+        <span class="Statement">elif</span> self.transform:
+            self.<span class="Identifier">object</span>=pygame.image.load(<span class="Constant">'pipe.jpeg'</span>)
+            self.<span class="Identifier">object</span>=pygame.transform.scale(self.<span class="Identifier">object</span>,(<span class="Constant">50</span>,self.y))
+            self.<span class="Identifier">object</span>=pygame.transform.rotate(self.<span class="Identifier">object</span>,<span class="Constant">90</span>)
+            self.<span class="Identifier">object</span>=pygame.transform.rotate(self.<span class="Identifier">object</span>,<span class="Constant">90</span>)
+            screen.blit(self.<span class="Identifier">object</span>,(self.x,<span class="Constant">0</span>))
+            self.rect.move_ip(self.x,<span class="Constant">0</span>)
+        <span class="Statement">elif</span> self.bird==<span class="Identifier">False</span> <span class="Statement">and</span> self.transform==<span class="Identifier">False</span>:
+            self.<span class="Identifier">object</span>=pygame.image.load(<span class="Constant">'pipe.jpeg'</span>)
+            c=<span class="Constant">600</span>-(self.y-self.gap)
+            self.<span class="Identifier">object</span>=pygame.transform.scale(self.<span class="Identifier">object</span>,(<span class="Constant">50</span>,c))
+            screen.blit(self.<span class="Identifier">object</span>,(self.x,(self.y+self.gap)))
+        <span class="Statement">if</span> self.transform:
+            self.rect = self.<span class="Identifier">object</span>.get_rect(center=(self.x+<span class="Constant">23</span>,<span class="Constant">0</span>))
+            self.rect=self.rect.inflate(<span class="Constant">5</span>,self.y)
+        <span class="Statement">elif</span> self.bird==<span class="Identifier">False</span>:
+            self.rect = self.<span class="Identifier">object</span>.get_rect(center=(self.x+<span class="Constant">23</span>,(<span class="Constant">600</span>-(self.y-self.gap))))
+            p = pygame.Rect(self.x,(self.y+self.gap),<span class="Constant">70</span>,self.y*<span class="Constant">10</span>)
+            self.rect=p.clip(self.rect)
+        <span class="Statement">else</span>:
+            self.rect=self.<span class="Identifier">object</span>.get_rect(center=((self.x+<span class="Constant">90</span>),(self.y+<span class="Constant">70</span>)))
+            p = pygame.Rect(self.x-<span class="Constant">3</span>,self.y+<span class="Constant">13</span>,<span class="Constant">70</span>,<span class="Constant">53</span>)
+            self.rect=p.clip(self.rect)
+
+
+
+<span class="Statement">def</span> <span class="Identifier">initialise</span>():
+    score=<span class="Constant">13</span>
+    pygame.display.set_caption(<span class="Constant">'My flappy bird'</span>)
+    y_scale=<span class="Constant">0</span>
+    x_pos=<span class="Constant">500</span>
+    rect_speed=<span class="Constant">1</span>
+    y_pos=<span class="Constant">0</span>
+    level=<span class="Constant">0</span>
+
+    screen=pygame.display.set_mode((width,height))
+    s = pygame.display.get_surface()
+
+    bird=_pipe(<span class="Constant">200</span>,<span class="Constant">300</span>,<span class="Identifier">False</span>,<span class="Identifier">True</span>)
+    bg=pygame.image.load(<span class="Constant">'bg.jpeg'</span>)
+    bg=pygame.transform.scale(bg,(width,height))
+
+    size=random.randint(<span class="Constant">200</span>,<span class="Constant">350</span>)
+    pipe1_up=_pipe(<span class="Constant">500</span>,size,<span class="Identifier">True</span>,<span class="Identifier">False</span>)
+    pipe1_down=_pipe(<span class="Constant">500</span>,size,<span class="Identifier">False</span>,<span class="Identifier">False</span>)
+
+    size=random.randint(<span class="Constant">200</span>,<span class="Constant">350</span>)
+    temp=random.randint(<span class="Constant">400</span>,<span class="Constant">500</span>)
+    pipe2_up=_pipe(<span class="Constant">500</span>+temp,size,<span class="Identifier">True</span>,<span class="Identifier">False</span>)
+    pipe2_down=_pipe(<span class="Constant">500</span>+temp,size,<span class="Identifier">False</span>,<span class="Identifier">False</span>)
+
+    size=random.randint(<span class="Constant">200</span>,<span class="Constant">350</span>)
+    temp=random.randint(<span class="Constant">800</span>,<span class="Constant">950</span>)
+    pipe3_up=_pipe(<span class="Constant">500</span>+temp,size,<span class="Identifier">True</span>,<span class="Identifier">False</span>)
+    pipe3_down=_pipe(<span class="Constant">500</span>+temp,size,<span class="Identifier">False</span>,<span class="Identifier">False</span>)
+
+    pipe_gang=pygame.sprite.Group()
+    pipe_gang.add(pipe1_up,pipe1_down,pipe2_up,pipe2_down,pipe3_up,pipe3_down)
+
+    game_loop(y_pos,pipe1_up,pipe1_down,pipe2_up,pipe2_down,pipe3_up,pipe3_down,y_scale,rect_speed,bird,bg,s,screen,score,pipe_gang)
+
+
+<span class="Statement">def</span> <span class="Identifier">game_over</span>(screen,bird):
+
+    font=pygame.font.Font(<span class="Identifier">None</span>,<span class="Constant">100</span>)
+    text=font.render(<span class="Constant">'GAMEOVER'</span>,<span class="Constant">1</span>,[<span class="Constant">0</span>,<span class="Constant">0</span>,<span class="Constant">0</span>])
+    screen.blit(text,[<span class="Constant">300</span>,<span class="Constant">250</span>])
+    font=pygame.font.Font(<span class="Identifier">None</span>,<span class="Constant">50</span>)
+    text=font.render(<span class="Constant">'Press Enter To Replay...'</span>,<span class="Constant">1</span>,[<span class="Constant">0</span>,<span class="Constant">0</span>,<span class="Constant">0</span>])
+    screen.blit(text,[<span class="Constant">350</span>,<span class="Constant">400</span>])
+    pygame.display.flip()
+    done=<span class="Identifier">False</span>
+    bird.y=<span class="Constant">580</span>
+    i=<span class="Constant">1</span>
+    <span class="Statement">while</span> done==<span class="Identifier">False</span>:
+        clock.tick(<span class="Constant">20</span>)
+        <span class="Statement">for</span> event <span class="Statement">in</span> pygame.event.get():
+
+            <span class="Statement">if</span> event.<span class="Identifier">type</span>==pygame.QUIT:
+                done=<span class="Identifier">True</span>
+            <span class="Statement">if</span> event.<span class="Identifier">type</span> == pygame.KEYDOWN:
+                <span class="Statement">if</span> event.key == pygame.K_RETURN:
+                    initialise()
+            bird.blit_pipe(screen)
+            pygame.display.flip()
+
+    sys.exit()
+
+
+<span class="Statement">def</span> <span class="Identifier">game_loop</span>(y_pos,pipe1_up,pipe1_down,pipe2_up,pipe2_down,pipe3_up,pipe3_down,y_scale,rect_speed,bird,bg,s,screen,score,pipe_gang):
+
+    <span class="Statement">global</span> point
+    <span class="Statement">global</span> wing
+    <span class="Statement">global</span> whoosh
+    <span class="Statement">global</span> hit
+    <span class="Statement">global</span> die
+
+    i=<span class="Constant">1</span>
+    flag=<span class="Constant">1</span>
+
+    <span class="Statement">while</span> <span class="Identifier">True</span>:
+        seconds=clock.tick()/<span class="Constant">1000.0</span>
+        <span class="Statement">if</span> flag==<span class="Constant">1</span>:
+            y_scale=<span class="Constant">3</span>*i
+            i+=<span class="Constant">0.1</span>
+            flag=<span class="Constant">0</span>
+        <span class="Statement">if</span> flag==<span class="Constant">0</span>:
+            <span class="Statement">for</span> event <span class="Statement">in</span> pygame.event.get():
+                <span class="Statement">if</span> event.<span class="Identifier">type</span> == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                <span class="Statement">if</span> event.<span class="Identifier">type</span> == pygame.KEYDOWN:
+                    <span class="Statement">if</span> event.key == pygame.K_SPACE:
+                        wing.play(loops=<span class="Constant">0</span>,maxtime=<span class="Constant">0</span>)
+                        y_scale=-<span class="Constant">2</span>
+
+                <span class="Statement">if</span> event.<span class="Identifier">type</span> == pygame.KEYUP:
+                    <span class="Statement">if</span> event.key == pygame.K_SPACE:
+                        y_scale=<span class="Constant">3</span>*i
+                        i+=<span class="Constant">0.1</span>
+
+
+        screen.blit(bg,(<span class="Constant">0</span>,<span class="Constant">0</span>))
+        bird.blit_pipe(screen)
+        pipe1_up.blit_pipe(screen)
+        pipe1_down.blit_pipe(screen)
+        pipe2_up.blit_pipe(screen)
+        pipe2_down.blit_pipe(screen)
+        pipe3_up.blit_pipe(screen)
+        pipe3_down.blit_pipe(screen)
+        p=pygame.draw.rect(screen,(<span class="Constant">0</span>,<span class="Constant">0</span>,<span class="Constant">0</span>),[<span class="Constant">0</span>,height-<span class="Constant">30</span>,width,<span class="Constant">30</span>],<span class="Constant">2</span>)
+        s.fill(Color(<span class="Constant">'brown'</span>), p)
+
+        <span class="Statement">if</span> bird.y&gt;=(height-<span class="Constant">100</span>):
+            die.play(loops=<span class="Constant">0</span>,maxtime=<span class="Constant">0</span>)
+            flag=<span class="Constant">1</span>
+            <span class="Statement">break</span>
+
+        <span class="Statement">if</span> <span class="Statement">not</span> bird.y&gt;height:
+            bird.y+=y_scale
+        <span class="Statement">if</span> <span class="Statement">not</span> (pipe1_up.x&lt;-<span class="Constant">50</span> <span class="Statement">or</span> pipe1_down.x&lt;-<span class="Constant">50</span>):
+            pipe1_up.x-=rect_speed
+            pipe1_down.x-=rect_speed
+        <span class="Statement">else</span>:
+            pipe1_up.x=<span class="Constant">1000</span>
+            pipe1_down.x=<span class="Constant">1000</span>
+            i=<span class="Constant">1</span>
+        <span class="Statement">if</span> <span class="Statement">not</span> (pipe2_up.x&lt;-<span class="Constant">50</span> <span class="Statement">or</span> pipe2_down.x&lt;-<span class="Constant">50</span>):
+            pipe2_up.x-=rect_speed
+            pipe2_down.x-=rect_speed
+        <span class="Statement">else</span>:
+            pipe2_up.x=<span class="Constant">1000</span>
+            pipe2_down.x=<span class="Constant">1000</span>
+            i=<span class="Constant">1</span>
+        <span class="Statement">if</span> <span class="Statement">not</span> (pipe3_up.x&lt;-<span class="Constant">50</span> <span class="Statement">or</span> pipe3_down.x&lt;-<span class="Constant">50</span>):
+            pipe3_up.x-=rect_speed
+            pipe3_down.x-=rect_speed
+        <span class="Statement">else</span>:
+            pipe3_up.x=<span class="Constant">1000</span>
+            pipe3_down.x=<span class="Constant">1000</span>
+            i=<span class="Constant">1</span>
+        <span class="Statement">if</span> bird.x&gt;pipe1_up.x <span class="Statement">and</span> bird.x &lt; pipe1_down.x+<span class="Constant">2</span>:
+            score = (score + <span class="Constant">1</span>)
+            point.play(loops=<span class="Constant">0</span>,maxtime=<span class="Constant">0</span>)
+        <span class="Statement">elif</span> bird.x&gt;pipe2_up.x <span class="Statement">and</span> bird.x &lt; pipe2_down.x+<span class="Constant">2</span>:
+            score = (score + <span class="Constant">1</span>)
+            point.play(loops=<span class="Constant">0</span>,maxtime=<span class="Constant">0</span>)
+        <span class="Statement">elif</span> bird.x&gt;pipe3_up.x <span class="Statement">and</span> bird.x &lt; pipe3_down.x+<span class="Constant">2</span>:
+            score = (score + <span class="Constant">1</span>)
+            point.play(loops=<span class="Constant">0</span>,maxtime=<span class="Constant">0</span>)
+        <span class="Statement">if</span> score&gt;=<span class="Constant">15</span>:
+            rect_speed=<span class="Constant">1.5</span>
+
+
+
+        font=pygame.font.Font(<span class="Identifier">None</span>,<span class="Constant">50</span>)
+        text=font.render(<span class="Constant">'Score:'</span>+<span class="Identifier">str</span>(score),<span class="Constant">1</span>,[<span class="Constant">0</span>,<span class="Constant">0</span>,<span class="Constant">0</span>])
+        screen.blit(text,[<span class="Constant">600</span>,<span class="Constant">100</span>])
+        <span class="Statement">if</span> pygame.sprite.spritecollideany(bird,pipe_gang):
+            hit.play(loops=<span class="Constant">0</span>,maxtime=<span class="Constant">0</span>)
+            game_over(screen,bird)
+        pygame.display.update()
+    game_over(screen,bird)
+
+
+<span class="Statement">if</span> __name__==<span class="Constant">&quot;__main__&quot;</span>:
+    initialise()
+    sys.exit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

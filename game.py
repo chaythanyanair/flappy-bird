@@ -68,7 +68,7 @@ class _pipe(pygame.sprite.Sprite):
 
 
 def initialise():
-    score=13    
+    score=0    
     pygame.display.set_caption('My flappy bird')
     y_scale=0
     x_pos=500
