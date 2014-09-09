@@ -68,7 +68,7 @@ class _pipe(pygame.sprite.Sprite):
 
 
 def initialise():
-    score=0    
+    score=13    
     pygame.display.set_caption('My flappy bird')
     y_scale=0
     x_pos=500
@@ -139,10 +139,14 @@ def game_loop(y_pos,pipe1_up,pipe1_down,pipe2_up,pipe2_down,pipe3_up,pipe3_down,
     global die
     
     i=1    
-    flag=0
+    flag=1
     
     while True:
         seconds=clock.tick()/1000.0
+        if flag==1:
+            y_scale=3*i
+            i+=0.1
+            flag=0
         if flag==0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -207,12 +211,9 @@ def game_loop(y_pos,pipe1_up,pipe1_down,pipe2_up,pipe2_down,pipe3_up,pipe3_down,
         elif bird.x>pipe3_up.x and bird.x < pipe3_down.x+2:
             score = (score + 1)
             point.play(loops=0,maxtime=0)
-        if score>=15 and score<16:
-            rect_speed=2
-        elif score>=30 and score<31:
-            rect_speed=4
-        elif score>=50:
-            rect_speed=7
+        if score>=15:
+            rect_speed=1.5
+       
 	
 	
 	font=pygame.font.Font(None,50)
