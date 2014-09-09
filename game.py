@@ -55,7 +55,7 @@ class _pipe(pygame.sprite.Sprite):
     	    screen.blit(self.object,(self.x,(self.y+self.gap)))
     	if self.transform:
             self.rect = self.object.get_rect(center=(self.x+23,0))
-            self.rect=self.rect.inflate(5,self.y)
+            self.rect=self.rect.inflate(4,self.y-10)
         elif self.bird==False:
             self.rect = self.object.get_rect(center=(self.x+23,(600-(self.y-self.gap))))
             p = pygame.Rect(self.x,(self.y+self.gap),70,self.y*10)
@@ -166,10 +166,13 @@ def game_loop(y_pos,pipe1_up,pipe1_down,pipe2_up,pipe2_down,pipe3_up,pipe3_down,
         screen.blit(bg,(0,0))
         bird.blit_pipe(screen)
         pipe1_up.blit_pipe(screen)
+        s.fill(Color("red"),pipe1_up.rect)
         pipe1_down.blit_pipe(screen)
         pipe2_up.blit_pipe(screen)
+        s.fill(Color("red"),pipe2_up.rect)
         pipe2_down.blit_pipe(screen)
         pipe3_up.blit_pipe(screen)
+        s.fill(Color("red"),pipe3_up.rect)
         pipe3_down.blit_pipe(screen)
         p=pygame.draw.rect(screen,(0,0,0),[0,height-30,width,30],2)
         s.fill(Color('brown'), p)
